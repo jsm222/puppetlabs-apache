@@ -84,10 +84,22 @@ define apache::mpm (
       }
     }
     'freebsd': {
-      class { '::apache::package':
-        mpm_module => $mpm
-      }
-    }
+      if ($mpm == 'itk') {
+      if versioncmp($apache_version, '2.4') >=0 {
+        Package { 'www/mod_mpm_itk' :
+          ensure=>'present'
+          }
+        } else {
+          package { 'httpd':
+          ensure => 'present',
+          name   => "www/apache22-itk-mpm",
+          notify => Class['Apache::Service'],
+          }
+        }
+      } else {
+        include ::apache::package
+        }
+     }
     'gentoo': {
       # so we don't fail
     }

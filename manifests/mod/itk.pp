@@ -18,9 +18,8 @@ class apache::mod::itk (
       fail('May not include both apache::mod::itk and apache::mod::prefork on the same node')
     }
   } else {
-    # prefork is a requirement for itk in 2.4; except on FreeBSD and Gentoo, which are special
-    # Note FreeBSD still requires prefork module see below.
-    if $::osfamily =~ /^(FreeBSD|Gentoo)/ {
+    # prefork is a requirement for itk in 2.4; except on Gentoo, which is special
+    if $::osfamily =~ /^Gentoo$/ {
       if defined(Class['apache::mod::prefork']) {
         fail('May not include both apache::mod::itk and apache::mod::prefork on the same node')
       }
@@ -76,17 +75,10 @@ class apache::mod::itk (
         }
       }
     }
-    'debian', 'freebsd': {
+    'debian','freebsd' : {
       apache::mpm{ 'itk':
         apache_version => $apache_version,
       }
-		# On FreeBSD mpm_prefork_module is required together with itk or you will get httpd: "Configuration error: No MPM loaded".
-		if ($::osfamily =~ /FreeBSD/) {
-		File { "$::apache::mod_dir/mpm_prefork.load":
-				content=>"LoadModule mpm_prefork_module $::apache::lib_path/mod_mpm_prefork.so",
-				ensure => 'present'
-	        }
-      	}
     }
     'gentoo': {
       ::portage::makeconf { 'apache2_mpms':
